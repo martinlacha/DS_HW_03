@@ -1,0 +1,155 @@
+VAGRANTFILE_API_VERSION = "2"
+
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'docker'
+ENV['VAGRANT_NO_PARALLEL'] = "1"
+ENV['FORWARD_DOCKER_PORTS'] = "1"
+ENV['VAGRANT_EXPERIMENTAL']="typed_triggers"
+
+unless Vagrant.has_plugin?("vagrant-docker-compose")
+  system("vagrant plugin install vagrant-docker-compose")
+  puts "Dependencies installed, please try the command again."
+  exit
+end
+
+# Docker images:
+ZOONODE_IMAGE  = "ds/hw3/zoonode:0.1"
+CLIENT_IMAGE   = "ds/hw3/client:0.1"
+COMMANDS_IMAGE   = "ds/hw3/commands:0.1"
+ZOONAVIGATOR_IMAGE = "elkozmon/zoonavigator:latest"
+
+SUBNET = "137.0.1."
+
+
+CLIENT  = { :nameprefix => "client-",
+            :subnet => SUBNET,
+            :ip_offset => 30,
+            :image => CLIENT_IMAGE,
+            :config => "client/client.cfg"
+          }
+
+TREE_LEVELS = 2 # 3 or 4
+# Check if tree levels count is valid
+if (TREE_LEVELS != 3 or TREE_LEVELS != 4) then
+  puts "Invalid count of tree levels. Set to default value 3."
+  TREE_LEVELS = 3
+end if
+
+# Variables
+#CLIENTS_COUNT = (2**TREE_LEVELS) - 1
+CLIENTS_COUNT = 2
+
+ROOT_NODE_INDEX = 0
+ROOT_NODE_NAME = "#{CLIENT[:nameprefix]}#{ROOT_NODE_INDEX}"
+ROOT_NODE_IP_ADDRESS = "#{CLIENT[:subnet]}#{CLIENT[:ip_offset] + ROOT_NODE_INDEX}"
+#ZOO_NODE_IP_ADDRESS = "#{CLIENT[:subnet]}#{CLIENT[:ip_offset] - 2}"
+ZOO_NODE_IP_ADDRESS = "#{CLIENT[:subnet]}10"
+#COMMANDS_NODE_IP_ADDRESS = "#{CLIENT[:subnet]}#{CLIENT[:ip_offset] - 1}"
+COMMANDS_NODE_IP_ADDRESS = "#{CLIENT[:subnet]}20"
+
+puts "Root name: #{ROOT_NODE_NAME}"
+puts "Root node IP: #{ROOT_NODE_IP_ADDRESS}"
+puts "ZooKeeper node IP: #{ZOO_NODE_IP_ADDRESS}"
+puts "Commands node IP: #{COMMANDS_NODE_IP_ADDRESS}"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.trigger.before :up, type: :command do |trigger|
+    trigger.name = "Build docker images"
+    trigger.ruby do |env, machine|
+        puts "Building Zoonode image:"
+        `docker build zoonode -t "#{ZOONODE_IMAGE}"`
+        puts "Building client node image:"
+        `docker build client -t "#{CLIENT_IMAGE}"`
+        puts "Building commands node image:"
+        `docker build commands -t "#{COMMANDS_IMAGE}"`
+    end
+  end
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.ssh.insert_key = false
+
+  # Definition of client commands node
+  config.vm.define "commands-node" do |s|
+    s.vm.network "private_network", ip: COMMANDS_NODE_IP_ADDRESS
+    s.vm.hostname = "commands-node"
+    s.vm.network "forwarded_port", guest: 80, host: 5000, host_ip: "0.0.0.0", auto_correct: true
+    s.vm.provider "docker" do |d|
+      d.image = COMMANDS_IMAGE
+      d.name = "commands-node"
+      d.has_ssh = true
+      d.env = {
+        "ZOO_IP" => ZOO_NODE_IP_ADDRESS
+      }
+    end
+    s.vm.post_up_message = "Node 'commands-node' up and running. You can access the node with 'vagrant ssh commands-node'}"
+  end
+
+  # Definition of Zoonode
+  config.vm.define "zoonode" do |s|
+    s.vm.network "private_network", ip: ZOO_NODE_IP_ADDRESS
+    s.vm.hostname = "zoonode"
+    s.vm.network "forwarded_port", guest: 80, host: 5000, host_ip: "0.0.0.0", auto_correct: true
+    s.vm.provider "docker" do |d|
+      d.image = ZOONODE_IMAGE
+      d.name = "zoonode"
+      d.has_ssh = true
+    end
+    s.vm.post_up_message = "Node 'zoonode' up and running. You can access the node with 'vagrant ssh zoonode'}"
+  end
+
+  # Definition of Client root node
+  config.vm.define ROOT_NODE_NAME do |s|
+    s.vm.network "private_network", ip: ROOT_NODE_IP_ADDRESS
+    s.vm.hostname = ROOT_NODE_NAME
+    s.vm.network "forwarded_port", guest: 80, host: 5000, host_ip: "0.0.0.0", auto_correct: true
+    s.vm.provider "docker" do |d|
+      d.image = CLIENT[:image]
+      d.name = ROOT_NODE_NAME
+      d.has_ssh = true
+      d.env = {
+        "ROOT_IP" => "#{ROOT_NODE_IP_ADDRESS}",
+        "NODE_IP" => "#{ROOT_NODE_IP_ADDRESS}",
+        "ZOO_IP" => ZOO_NODE_IP_ADDRESS,
+        "CLIENT_NODE_COUNT" => "#{CLIENTS_COUNT}"
+      }
+    end
+  end
+
+  # Definition of Client non-root nodes
+  (0..CLIENTS_COUNT-1).each do |i|
+    if i != ROOT_NODE_INDEX
+      node_ip_addr = "#{CLIENT[:subnet]}#{CLIENT[:ip_offset] + i}"
+      node_name = "#{CLIENT[:nameprefix]}#{i}"
+      config.vm.define node_name do |s|
+        s.vm.network "private_network", ip: node_ip_addr
+        s.vm.hostname = node_name
+        s.vm.network "forwarded_port", guest: 80, host: 5000, host_ip: "0.0.0.0", auto_correct: true
+        s.vm.provider "docker" do |d|
+          d.image = CLIENT[:image]
+          d.name = node_name
+          d.has_ssh = true
+          d.env = { 
+            "ROOT_IP" => ROOT_NODE_IP_ADDRESS,
+            "ZOO_IP" => ZOO_NODE_IP_ADDRESS,
+            "NODE_IP" => node_ip_addr
+          }
+        end
+        s.vm.post_up_message = "Node #{node_name} up and running. You can access the node with 'vagrant ssh #{node_name}'}"
+      end
+    end
+  end
+
+  config.vm.define "zoonavigator" do |s|
+    s.vm.network "private_network", ip: "#{SUBNET}101"
+    s.vm.network "forwarded_port", guest: 9000, host: 9000, host_ip: "0.0.0.0"
+    s.vm.hostname = "zoonavigator"
+    s.vm.provider "docker" do |d|
+      d.image = ZOONAVIGATOR_IMAGE
+      d.name = "zoonavigator"
+      d.has_ssh = false
+      d.env = { "HTTP_PORT" => "9000" }
+    end
+    s.vm.post_up_message = "Node 'zoonavigator' up and running. You can access the node with 'vagrant ssh zoonode'}"
+  end
+end
+
+# EOF
