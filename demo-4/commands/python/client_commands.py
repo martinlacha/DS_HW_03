@@ -17,7 +17,7 @@ def help():
     print('Get: python3 client_commands.py <ip> get <key>')
     print('Put: python3 client_commands.py <ip> put <key> <value>')
     print('Delete: python3 client_commands.py <ip> delete <key>')
-
+    print('Tree: python3 client_commands.py tree')
 
 # Print entire tree of Distributed cache
 def print_tree():
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     try:
         args = sys.argv
         argc = len(args)
-        if argc < 2 or argc > 4:
+        if argc < 2 or argc > 5:
             raise Exception(f'Invalid count of argument ({argc - 1}). Expected: 2,3 or 4')
 
         ip = args[1]

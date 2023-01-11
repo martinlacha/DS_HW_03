@@ -1,5 +1,4 @@
 import os
-import requests
 from kazoo.client import KazooClient
 from flask import Flask, jsonify, request
 from cache_store import Cache_Store
@@ -7,6 +6,8 @@ from mylog import log
 from node_binary_tree import Tree, Node
 from flask_restx import Resource, Api
 from zookeeper_node import register_new_node
+import requests
+import netifaces
 
 app = Flask(__name__)
 api = Api(app)
@@ -147,11 +148,16 @@ class ApiResource(Resource):
 
 # Main method
 if __name__ == '__main__':
-    '''
     if im_root:
         root = Node(root_ip, None)
         tree = Tree(root)
     else:
         pass
-    '''
-    app.run(host=str(node_ip), debug=True)
+    log.info(f'Starting application on IP: {node_ip}')
+    
+    interface_eth0_info = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]
+    #interface_eth1_info = netifaces.ifaddresses('eth1')[netifaces.AF_INET][0]
+    log.info(f'Eth0: {interface_eth0_info}')
+    #log.info(f'Eth1: {interface_eth1_info}')
+
+    app.run(host=node_ip, debug=True)

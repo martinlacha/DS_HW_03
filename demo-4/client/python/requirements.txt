@@ -1,5 +1,6 @@
 kazoo==2.6.0
-requests==2.25.1
 colorlog==6.7.0
-Flask==2.25.1
+Flask==2.0.1
 flask_restx==1.0.3
+requests==2.25.1
+netifaces==0.10.9

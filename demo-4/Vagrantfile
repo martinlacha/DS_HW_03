@@ -108,7 +108,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       d.env = {
         "ROOT_IP" => "#{ROOT_NODE_IP_ADDRESS}",
         "NODE_IP" => "#{ROOT_NODE_IP_ADDRESS}",
-        "ZOO_IP" => ZOO_NODE_IP_ADDRESS,
+        "ZOO_IP" => "#{ZOO_NODE_IP_ADDRESS}",
         "CLIENT_NODE_COUNT" => "#{CLIENTS_COUNT}"
       }
     end
