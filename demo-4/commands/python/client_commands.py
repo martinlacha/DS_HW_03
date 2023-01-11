@@ -50,12 +50,12 @@ if __name__ == '__main__':
         response = ''
 
         if operation == 'get':
-            response = requests.get(f'http://{ip}:5000/data?key={key}')
+            response = requests.get(f'http://{ip}:5000/api?key={key}')
         elif operation == 'put':
-            value = argc[4]
-            response = requests.put(f'http://{ip}:5000/data?key={key}&value={value}')
+            value = args[4]
+            response = requests.put(f'http://{ip}:5000/api?key={key}&value={value}')
         elif operation == 'delete':
-            response = requests.delete(f'http://{ip}:5000/data?key={key}')
+            response = requests.delete(f'http://{ip}:5000/api?key={key}')
         elif operation == 'tree':
             print_tree()
             exit(code=0)

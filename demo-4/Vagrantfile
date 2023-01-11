@@ -36,7 +36,7 @@ end if
 
 # Variables
 #CLIENTS_COUNT = (2**TREE_LEVELS) - 1
-CLIENTS_COUNT = 1
+CLIENTS_COUNT = 3
 
 ROOT_NODE_INDEX = 0
 ROOT_NODE_NAME = "#{CLIENT[:nameprefix]}#{ROOT_NODE_INDEX}"
@@ -88,13 +88,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "zoonode" do |s|
     s.vm.network "private_network", ip: ZOO_NODE_IP_ADDRESS
     s.vm.hostname = "zoonode"
-    s.vm.network "forwarded_port", guest: 80, host: 5000, host_ip: "0.0.0.0", auto_correct: true
     s.vm.provider "docker" do |d|
       d.image = ZOONODE_IMAGE
       d.name = "zoonode"
       d.has_ssh = true
     end
     s.vm.post_up_message = "Node 'zoonode' up and running. You can access the node with 'vagrant ssh zoonode'}"
+  end
+
+  config.vm.define "zoonavigator" do |s|
+    s.vm.network "private_network", ip: "#{SUBNET}101"
+    s.vm.network "forwarded_port", guest: 9000, host: 9000, host_ip: "0.0.0.0"
+    s.vm.hostname = "zoonavigator"
+    s.vm.provider "docker" do |d|
+      d.image = ZOONAVIGATOR_IMAGE
+      d.name = "zoonavigator"
+      d.has_ssh = false
+      d.env = { "HTTP_PORT" => "9000" }
+    end
+    s.vm.post_up_message = "Node 'zoonavigator' up and running. You can access the node with 'vagrant ssh zoonode'}"
   end
 
   # Definition of Client root node
@@ -139,19 +151,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         s.vm.post_up_message = "Node #{node_name} up and running. You can access the node with 'vagrant ssh #{node_name}'}"
       end
     end
-  end
-
-  config.vm.define "zoonavigator" do |s|
-    s.vm.network "private_network", ip: "#{SUBNET}101"
-    s.vm.network "forwarded_port", guest: 9000, host: 9000, host_ip: "0.0.0.0"
-    s.vm.hostname = "zoonavigator"
-    s.vm.provider "docker" do |d|
-      d.image = ZOONAVIGATOR_IMAGE
-      d.name = "zoonavigator"
-      d.has_ssh = false
-      d.env = { "HTTP_PORT" => "9000" }
-    end
-    s.vm.post_up_message = "Node 'zoonavigator' up and running. You can access the node with 'vagrant ssh zoonode'}"
   end
 end
 

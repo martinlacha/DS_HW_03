@@ -36,7 +36,6 @@ class Tree:
         log.info(f'Adding new node with ip: {ip}')
         nodes_list = list()
         nodes_list.append(self._root)
-        
         while len(nodes_list) > 0:
             current_node = nodes_list.pop()
             left_node = current_node._left_node
@@ -46,11 +45,13 @@ class Tree:
                 if left_node._ip_address == ip:
                     log.info(f'Already in tree as left child of node with ip: {left_node._ip_address}. Return parent node.')
                     return current_node
+                log.info(f'Add node under left child node for node with IP: {current_node._ip_address}')
                 nodes_list.append(left_node)
             if right_node is not None:
                 if right_node._ip_address == ip:
                     log.info(f'Already in tree as right child of node with ip: {right_node._ip_address}. Return parent node.')
                     return current_node
+                log.info(f'Add node under right child node for node with IP: {current_node._ip_address}')
                 nodes_list.append(current_node._right_node)
 
             if current_node.is_child_node_free():

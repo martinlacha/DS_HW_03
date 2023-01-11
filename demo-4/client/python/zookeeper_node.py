@@ -4,9 +4,11 @@ from time import sleep
 
 # register new path to Zookeeper
 def register_new_node(zk : KazooClient, new_node_ip, parent_node_ip, is_root):
+
     if is_root is True:
-        log.info('Register root node into Zookeeper.')
+        log.info(f'Register root node into Zookeeper. Info: node: {new_node_ip}, parent: {parent_node_ip}, root: {is_root}')
         path = f'/{new_node_ip}'
+        log.info(f'Path to check: {path}')
         if zk.exists(path):
             log.warn(f'Root path already exists.')
             return
