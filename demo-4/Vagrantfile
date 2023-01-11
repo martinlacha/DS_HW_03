@@ -77,6 +77,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       d.name = "commands-node"
       d.has_ssh = true
       d.env = {
+        "STARTUP_DELAY": "10", 
         "ZOO_IP" => ZOO_NODE_IP_ADDRESS
       }
     end
@@ -106,6 +107,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       d.name = ROOT_NODE_NAME
       d.has_ssh = true
       d.env = {
+        "STARTUP_DELAY": "10", 
         "ROOT_IP" => "#{ROOT_NODE_IP_ADDRESS}",
         "NODE_IP" => "#{ROOT_NODE_IP_ADDRESS}",
         "ZOO_IP" => "#{ZOO_NODE_IP_ADDRESS}",
@@ -128,6 +130,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           d.name = node_name
           d.has_ssh = true
           d.env = { 
+            "STARTUP_DELAY": "10",
             "ROOT_IP" => ROOT_NODE_IP_ADDRESS,
             "ZOO_IP" => ZOO_NODE_IP_ADDRESS,
             "NODE_IP" => node_ip_addr

@@ -154,10 +154,5 @@ if __name__ == '__main__':
     else:
         pass
     log.info(f'Starting application on IP: {node_ip}')
-    
-    interface_eth0_info = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]
-    #interface_eth1_info = netifaces.ifaddresses('eth1')[netifaces.AF_INET][0]
-    log.info(f'Eth0: {interface_eth0_info}')
-    #log.info(f'Eth1: {interface_eth1_info}')
 
     app.run(host=node_ip, debug=True)
