@@ -207,9 +207,7 @@ if __name__ == '__main__':
     zk.start()
 
     log.info(f'Starting node.')
-    log.info(f'Parameters:')
-    log.info(f'IP: {node_ip}')
-    log.info(f'ROOT: {root_ip}')
+    
 
     if im_root:
         log.info(f'Initialize root node on IP: {node_ip}')
@@ -222,4 +220,11 @@ if __name__ == '__main__':
 
     # Register new node to Zookeeper
     register_new_node(zk, node_ip, parent_ip_address, im_root)
-    app.run(host=node_ip, debug=True)
+
+    log.info(f'Parameters:')
+    log.info(f'IP: {node_ip}')
+    log.info(f'Parent: {parent_ip_address}')
+    log.info(f'ROOT: {root_ip}')
+
+    #app.run(host=node_ip, debug=True)
+    app.run(host=node_ip, debug=False)

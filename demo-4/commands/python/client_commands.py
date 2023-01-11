@@ -21,17 +21,25 @@ def help():
 
 # Print entire tree of Distributed cache
 def print_tree():
-    paths = ['/']
+    paths = list()
+    paths.append('/')
     while len(paths) > 0:
+        print(f'Paths: {paths}')
         current_path = paths.pop()
+        print(f'Processing path: {current_path}')
         data, stats = zk.get(current_path)
         if stats.children_count > 0:
             child_list = zk.get_children(current_path)
+            print(f'children: {child_list}')
             for child in child_list:
                 if current_path == '/':
-                    paths.append(f'/{child}')
+                    new_path = f'/{child}'
+                    print(f'Add new path: {new_path}')
+                    paths.append(new_path)
                 else:
-                    paths.append(f'{current_path}/{child}')
+                    new_path = f'{current_path}/{child}'
+                    print(f'Add new path: {new_path}')
+                    paths.append(new_path)
 
 
 if __name__ == '__main__':

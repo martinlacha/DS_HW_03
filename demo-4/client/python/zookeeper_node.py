@@ -62,6 +62,8 @@ def find_path_parent_node(zk, parent_ip_address):
         # Check number of children
         if stats.children_count > 0:
             children = zk.get_children(current_path)
+            if current_path == '/':
+                children.remove('zookeeper')
             log.info(f'Children: {children}')
 
             # Check if parent is in child nodes

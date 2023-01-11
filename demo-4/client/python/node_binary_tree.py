@@ -44,12 +44,14 @@ class Tree:
             if left_node is not None:
                 if left_node._ip_address == ip:
                     log.info(f'Already in tree as left child of node with ip: {left_node._ip_address}. Return parent node.')
+                    self._lock.release()
                     return current_node
                 log.info(f'Add node under left child node for node with IP: {current_node._ip_address}')
                 nodes_list.append(left_node)
             if right_node is not None:
                 if right_node._ip_address == ip:
                     log.info(f'Already in tree as right child of node with ip: {right_node._ip_address}. Return parent node.')
+                    self._lock.release()
                     return current_node
                 log.info(f'Add node under right child node for node with IP: {current_node._ip_address}')
                 nodes_list.append(current_node._right_node)
@@ -58,6 +60,7 @@ class Tree:
                 log.info(f'Found free node')
                 child = Node(ip, current_node)
                 current_node.add_new_child_node(child)
+                self._lock.release()
                 return current_node
         self._lock.release()
         # Return None for root node
