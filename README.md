@@ -126,5 +126,14 @@ Kořen:
 <img src="images/propagation3.png">
 
 ## Cache cohorence
+Problém implementované distribuované cache je takový, že některé změny se musí projevit v každém uzlu systému jako například následujícím případu.
 
+<img src="images/example.png"/>
 
+Změny lokálních úložišť metodami PUT a DELETE se projevují jen do lokálních úložišť uzlu a jeho rodiče a takto to funguje rekurzivně. Tento problém je možné řešit několika způsoby.
+
+* Při každé operaci PUT nebo DELETE by poslala brodcastem na všechny uzly ve struktuře. Vyžadovalo by to, aby kořenový uzel udržoval seznam těchto uzlů. V rámci této semestrální práce je to jednoduché, ale ve skutečnosti by se mohlo jednat o náročný úkol pokud uvažujeme dynamické změny jako je přidávání, odebírání nebo výpadky uzlů.
+
+* Periodicky by se posílal brodcast s hodnotami uloženými v kořenovém uzlu, který bude mít pokaždé nejvíce aktuální data. Tento způsob by ale vyžadoval mnoho komunikace ,obvžlášť pokud kořenový uzel obsahuje mnoho dat.
+
+Udržení ale takovéto cache coherence bude vyžadovat mnoho komunikace mezi jednotlivými uzly a je možné že to také zpomalý celý systém, ale pro uchování konzistentního stavu je to mnohdy potřeba.
