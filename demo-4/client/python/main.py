@@ -8,6 +8,7 @@ from flask_restx import Resource, Api
 from zookeeper_node import register_new_node
 import requests
 import netifaces
+from threading import Thread
 
 app = Flask(__name__)
 api = Api(app)
@@ -81,8 +82,15 @@ class ApiResource(Resource):
             log.info(f'Value was not found in cache')
             return 'Value not found in cache by key', 201
         else:
-            # TODO zjistit zda to není v rodičovi
-            pass
+            log.info(f'Try to find value in parent.')
+            value, status = get_parent_data(key)
+
+            if status == 200:
+                cache.put(key, value)
+                return value, 200
+            else:
+                log.info(f'Value not found either in parent node.')
+        return 'Value not found in cache by key', 201
 
 
     # PUT method
@@ -115,10 +123,14 @@ class ApiResource(Resource):
         cache.put(key, value)
 
         if im_root is True:
+            log.info(f'Value store in local cache.')
             return 'Value was insert in cache.', 200
         else:
-            # TODO vypropagovat do rodiče
-            pass
+            log.info(f'Send request into parent')
+            Thread(target=put_parent_data, args=(key, value)).start()
+
+        log.info(f'Value store in local cache.')
+        return 'Value was insert in cache.', 200
 
 
     # DELETE method
@@ -149,8 +161,7 @@ class ApiResource(Resource):
             if im_root is True:                
                 return 'Value was delete by key in cache.', 200
             else:
-                # TODO vypropagovat do rodiče
-                pass
+                Thread(target=delete_parent_data, args=(key)).start()
         else:
             log.info(f'Value not found in cache for key: {key}')
             return 'Value not found in cache by key', 201
@@ -173,29 +184,56 @@ def get_parent_ip_from_root():
 
 
 # Get data from parent node
-def get_parent_data():
+def get_parent_data(key):
     try:
-        pass
+        log.info(f'Send parent ({parent_ip_address}) GET request to remove value with key: {key}.')
+        response = requests.get(f'http://{parent_ip_address}:5000/api?key={key}')
+        if response.status_code == 200:
+            log.info(f'Value was get from parent with key: {key}')
+            return eval(response.text).strip(), response.status_code
+        elif response.status_code == 201:
+            log.info(f'Value not found by key: {key}')
+        elif response.status_code == 400:
+            log.warn(f'Invalid parameter key: {key}')
+        else:
+            log.error(f'Unknown return code: {response.status_code}')
     except Exception as e:
-        log.error(f'Error while get data from cache.')
+        log.error(f'Error while deleting data from cache.')
         log.error(f'Error: {e}')
-    return None
+    return None, 201
 
 
 # Put new key-value record into parent node
-def put_parent_data():
+def put_parent_data(key, value):
     try:
-        pass
+        log.info(f'Send parent ({parent_ip_address}) PUT request to remove value with key: {key}, value: {value}.')
+        response = requests.put(f'http://{parent_ip_address}:5000/api?key={key}&value={value}')
+        if response.status_code == 200:
+            log.info(f'Value was get from parent with key: {key}')
+        elif response.status_code == 400:
+            log.warn(f'Invalid parameter key: {key}')
+        elif response.status_code == 401:
+            log.info(f'Invalid parameter: {value}')
+        else:
+            log.error(f'Unknown return code: {response.status_code}')
     except Exception as e:
         log.error(f'Error while put data in cache.')
         log.error(f'Error: {e}')
-    return None
 
 
 # Delete value from parent node cache by key
-def delete_parent_data():
+def delete_parent_data(key):
     try:
-        pass
+        log.info(f'Send parent ({parent_ip_address}) DELETE request to remove value with key: {key}.')
+        response = requests.delete(f'http://{parent_ip_address}:5000/api?key={key}')
+        if response.status_code == 200:
+            log.info(f'Value was removed from parent with key: {key}')
+        elif response.status_code == 201:
+            log.info(f'Value not found by key: {key}')
+        elif response.status_code == 400:
+            log.warn(f'Invalid parameter key: {key}')
+        else:
+            log.error(f'Unknown return code: {response.status_code}')
     except Exception as e:
         log.error(f'Error while deleting data from cache.')
         log.error(f'Error: {e}')
@@ -207,7 +245,6 @@ if __name__ == '__main__':
     zk.start()
 
     log.info(f'Starting node.')
-    
 
     if im_root:
         log.info(f'Initialize root node on IP: {node_ip}')
