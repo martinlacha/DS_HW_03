@@ -74,8 +74,9 @@ class ApiResource(Resource):
 
         log.info(f'Receive GET method to find value for key: {key}')
         value = cache.get(key)
+        log.info(f'Value from local cache: {value}')
 
-        if key is not None:
+        if value is not None:
             return value, 200
 
         if im_root is True:
@@ -152,7 +153,7 @@ class ApiResource(Resource):
             log.error(f'Invalid parameters of request. Parameter key missing.')
             return 'Invalid parameters of request. Parameter key missing.', 400
 
-        log.info(f'Receive DELETE method to find value for key: {key}')
+        log.info(f'Receive DELETE method to remove value for key: {key}')
         removed = cache.delete(key)
 
         # Check if value was removed from cache
@@ -206,7 +207,7 @@ def get_parent_data(key):
 # Put new key-value record into parent node
 def put_parent_data(key, value):
     try:
-        log.info(f'Send parent ({parent_ip_address}) PUT request to remove value with key: {key}, value: {value}.')
+        log.info(f'Send parent ({parent_ip_address}) PUT request to insert key: {key}, value: {value}.')
         response = requests.put(f'http://{parent_ip_address}:5000/api?key={key}&value={value}')
         if response.status_code == 200:
             log.info(f'Value was get from parent with key: {key}')
