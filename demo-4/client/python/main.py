@@ -163,6 +163,7 @@ class ApiResource(Resource):
                 return 'Value was delete by key in cache.', 200
             else:
                 Thread(target=delete_parent_data, args=(key)).start()
+                return 'Value was delete by key in cache.', 200
         else:
             log.info(f'Value not found in cache for key: {key}')
             return 'Value not found in cache by key', 201

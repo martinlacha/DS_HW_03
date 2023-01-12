@@ -27,7 +27,7 @@ CLIENT  = { :nameprefix => "client-",
             :config => "client/client.cfg"
           }
 
-TREE_LEVELS = 5 # 3 or 4
+TREE_LEVELS = 3 # 3 or 4
 # Check if tree levels count is valid
 if TREE_LEVELS != 3
   if TREE_LEVELS != 4
@@ -38,8 +38,7 @@ if TREE_LEVELS != 3
 end
 
 # Variables
-#CLIENTS_COUNT = (2**TREE_LEVELS) - 1
-CLIENTS_COUNT = 2
+CLIENTS_COUNT = (2**TREE_LEVELS) - 1
 
 ROOT_NODE_INDEX = 0
 ROOT_NODE_NAME = "#{CLIENT[:nameprefix]}#{ROOT_NODE_INDEX}"
@@ -100,7 +99,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "zoonavigator" do |s|
-    s.vm.network "private_network", ip: "#{SUBNET}101"
+    s.vm.network "private_network", ip: "#{SUBNET}100"
     s.vm.network "forwarded_port", guest: 9000, host: 9000, host_ip: "0.0.0.0"
     s.vm.hostname = "zoonavigator"
     s.vm.provider "docker" do |d|
