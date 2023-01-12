@@ -23,22 +23,19 @@ def help():
 def print_tree():
     paths = list()
     paths.append('/')
+    print(f'Tree:')
     while len(paths) > 0:
-        print(f'Paths: {paths}')
         current_path = paths.pop()
-        print(f'Processing path: {current_path}')
+        print(f'- {current_path}')
         data, stats = zk.get(current_path)
         if stats.children_count > 0:
             child_list = zk.get_children(current_path)
-            print(f'children: {child_list}')
             for child in child_list:
                 if current_path == '/':
                     new_path = f'/{child}'
-                    print(f'Add new path: {new_path}')
                     paths.append(new_path)
                 else:
                     new_path = f'{current_path}/{child}'
-                    print(f'Add new path: {new_path}')
                     paths.append(new_path)
 
 
@@ -48,6 +45,10 @@ if __name__ == '__main__':
         argc = len(args)
         if argc < 2 or argc > 5:
             raise Exception(f'Invalid count of argument ({argc - 1}). Expected: 2,3 or 4')
+
+        if args[1] == 'tree':
+            print_tree()
+            exit()
 
         ip = args[1]
         operation = args[2]
@@ -64,9 +65,6 @@ if __name__ == '__main__':
             response = requests.put(f'http://{ip}:5000/api?key={key}&value={value}')
         elif operation == 'delete':
             response = requests.delete(f'http://{ip}:5000/api?key={key}')
-        elif operation == 'tree':
-            print_tree()
-            exit(code=0)
         else:
             raise Exception(f'Invalid operation ({operation}). Expected get, put, delete.')
 

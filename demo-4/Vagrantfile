@@ -27,15 +27,19 @@ CLIENT  = { :nameprefix => "client-",
             :config => "client/client.cfg"
           }
 
-TREE_LEVELS = 3 # 3 or 4
+TREE_LEVELS = 5 # 3 or 4
 # Check if tree levels count is valid
-if (TREE_LEVELS != 3 or TREE_LEVELS != 4) then
-  puts "Invalid count of tree levels. Set to default value 3."
-  TREE_LEVELS = 3
-end if
+if TREE_LEVELS != 3
+  if TREE_LEVELS != 4
+    puts "Invalid count of tree levels. Expected 3 or 4. Real #{TREE_LEVELS}"
+    puts "Setting default tree level value to 3."
+    TREE_LEVELS = 3
+  end
+end
 
 # Variables
-CLIENTS_COUNT = (2**TREE_LEVELS) - 1
+#CLIENTS_COUNT = (2**TREE_LEVELS) - 1
+CLIENTS_COUNT = 2
 
 ROOT_NODE_INDEX = 0
 ROOT_NODE_NAME = "#{CLIENT[:nameprefix]}#{ROOT_NODE_INDEX}"

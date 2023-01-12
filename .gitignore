@@ -36,3 +36,8 @@ demo-4/.vagrant/machines/zoonode/docker/index_uuid
 demo-4/.vagrant/machines/zoonode/docker/synced_folders
 demo-4/.vagrant/rgloader/loader.rb
 .idea/DS_HW_03.iml
+demo-4/.vagrant/machines/client-0/docker/vagrant_cwd
+demo-4/.vagrant/machines/client-1/docker/vagrant_cwd
+demo-4/.vagrant/machines/commands-node/docker/vagrant_cwd
+demo-4/.vagrant/machines/zoonavigator/docker/vagrant_cwd
+demo-4/.vagrant/machines/zoonode/docker/vagrant_cwd
